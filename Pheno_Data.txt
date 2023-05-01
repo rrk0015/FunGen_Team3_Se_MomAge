@@ -1,0 +1,19 @@
+	treatment	Age	type
+SRR6853319	Control 	Old Mom	paired-end
+SRR6853320	High Dose 	Old Mom	paired-end
+SRR6853321	High Dose 	Old Mom	paired-end
+SRR6853322	Low Dose 	Old Mom	paired-end
+SRR6853323	High Dose 	Old Mom	paired-end
+SRR6853324	Low Dose 	Old Mom	paired-end
+SRR6853325	Low Dose 	Old Mom	paired-end
+SRR6853326	Control 	Old Mom	paired-end
+SRR6853327	Low Dose 	Young Mom	paired-end
+SRR6853328	Control 	Young Mom	paired-end
+SRR6853329	High Dose 	Young Mom	paired-end
+SRR6853330	Low Dose 	Young Mom	paired-end
+SRR6853331	Control 	Young Mom	paired-end
+SRR6853332	High Dose 	Young Mom	paired-end
+SRR6853333	Low Dose 	Young Mom	paired-end
+SRR6853334	Control 	Young Mom	paired-end
+SRR6853335	Control 	Old Mom	paired-end
+SRR6853336	High Dose 	Young Mom	paired-end
