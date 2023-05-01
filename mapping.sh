@@ -1,19 +1,21 @@
 #!/bin/sh
  
-######### FunGen Course Instructions ############
-## Purpose: The purpose of this script is to 
-##    Use HiSat2 to index your reference genome and then map your cleaned (paired) reads to the indexed reference
-##              First need to use gffread to convert annotation file from .gff3 to .gft formate
+######### Instructions  ############
+## Purpose: The purpose of this script is to map the cleaned RNASeq data (.fasta) from step 2 of the core pipeline, outlined in script "step2_trimmomatics_FastQC," to the reference genome. 
+## For the core pipeline, the reference genome used was ASM211347v1, curated by Arizona State University (2021). 
+## For the reference genome effect study, a substitute reference genome was used... PA42v3.0 curated by Indiana State University Bloomington (2016)
+## Use HiSat2 to index the reference genome and map cleaned (paired) reads to the indexed reference
+##              First need to use gffread to convert annotation file from .gff3 to .gft format
 ##              Use Stringtie to count the reads mapped to genes and transcripts, defined in this case by the genome annotation file
 ##              use the python script to take the Stringtie results to make two counts matricies, one at the gene level and one at the transcript level
 ## HiSat2  Indexing  InPut: Reference genome file (.fasta), and annotation file (.gff3) (Optional)
 ##                    Output: Indexed genome 
-## HiSat2 Mapping     Input: Cleaned read files, paired (.fasq); Indexed genome
+## HiSat2 Mapping     Input: Cleaned read files, paired (.fastq) created during step 2 (trimmomatics and FASTQC script); Indexed genome
 ##                    Output: Alignment .sam files  
-## Samtools  Convert .sam to .bam and sort         Input: Alignment files  .sam
-##                                                  Output: Sorted .bam files
-## Stringtie  Counting reads  Input: sorted .bam file
-##                            Output:  Directories of counts files for Ballgown (R program for DGE)
+## Samtools Convert .sam to .bam and sort         Input: Alignment files .sam
+##                                                Output: Sorted .bam files
+## Stringtie Counting reads  Input: sorted .bam file
+##                           Output:  Directories of counts files for Ballgown (R program for DGE)
 ##              prepDE.py    Python script to create a counts matrics from the Stringtie output.  Inputs: Directory from Stringtie
 ##                                                                                                Output:  .csv files of counts matrix
 ## For running the script on the Alabama Super Computer.
@@ -48,19 +50,19 @@ set -x
 
 ##########  Define variables and make directories
 ## Replace the numbers in the brackets with Your specific information
-## make variable for your ASC ID so the directories are automatically made in YOUR directory
-## Replace the [#] with paths to define these variable
-MyID=team3_finalproj          ## Example: MyID=aubtss
+  ## make variable for your ASC ID so the directories are automatically made in YOUR directory
+  ## Replace the [#] with paths to define these variable
+MyID=team3_finalproj
 
-WD=/scratch/$MyID/PracticeRNAseq                                 ## Example:/scratch/$MyID/PracticeRNAseq  
-CLEAND=/scratch/$MyID/PracticeRNAseq/CleanData                   ## Example:/scratch/$MyID/PracticeRNAseq/CleanData20   #   *** This is where the cleaned paired files are located
-REFD=/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome_6            ## Example:/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome_6  # this directory contains the indexed reference genome for the garter snake
-MAPD=/scratch/$MyID/PracticeRNAseq/Map_HiSat2_6                  ## Example:/scratch/$MyID/PracticeRNAseq/Map_HiSat2_6
-COUNTSD=/scratch/$MyID/PracticeRNAseq/Counts_StringTie_6         ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie_6
+WD=/scratch/$MyID/PracticeRNAseq                                 
+CLEAND=/scratch/$MyID/PracticeRNAseq/CleanData                   ##This is where the cleaned, paired files are located
+REFD=/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome_6            ##This is where the indexed reference genome for Daphnia pulex;  GCF_021134715.1_ASM2113471v1_genomic.fasta + GCF_021134715.1_ASM2113471v1_genomic.gff3
+MAPD=/scratch/$MyID/PracticeRNAseq/Map_HiSat2_6                  ##This is where the mapped sequence files will be located (.sam and .bam)
+COUNTSD=/scratch/$MyID/PracticeRNAseq/Counts_StringTie_6         ##This is where the read counts files will be located alongside other stringtie outputs
 
-RESULTSD=/home/aubclsb0320/PracticeRNAseq/Counts_H_S_6                  ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S_6
+RESULTSD=/home/aubclsb0329/PracticeRNAseq/Counts_H_S_6           ##This is where the results you want to be brought back to your computer are
 
-REF=DaphniaPulex_RefGenome_PA42_v3.0                  ## This is what the "easy name" will be for the genome reference
+REF=GCF_021134715.1_ASM2113471v1_genomic                  ## This is what the "easy name" will be for the genome reference
 
 ## Make the directories and all subdirectories defined by the variables above
 mkdir -p $REFD
@@ -70,8 +72,8 @@ mkdir -p $RESULTSD
 
 ##################  Prepare the Reference Index for mapping with HiSat2   #############################
 cd $REFD
-cp ~/class_shared/schwartz_class/$REF.fasta .
-cp ~/class_shared/schwartz_class/$REF.gff3 .
+cp /scratch/team3_finalproj/RefGenome/ncbi-genomes-2023-04-04/$REF.fasta .
+cp /scratch/team3_finalproj/RefGenome/ncbi-genomes-2023-04-04/$REF.gff3 .
 
 ###  Identify exons and splice sites
 gffread $REF.gff3 -T -o $REF.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
@@ -79,7 +81,7 @@ extract_splice_sites.py $REF.gtf > $REF.ss
 extract_exons.py $REF.gtf > $REF.exon
 
 #### Create a HISAT2 index for the reference genome. NOTE every mapping program will need to build a its own index.
-hisat2-build --ss $REF.ss --exon $REF.exon $REF.fasta DpulPA42_index
+hisat2-build --ss $REF.ss --exon $REF.exon $REF.fasta Dpul_ASM2113471v1_index
 
 ########################  Map and Count the Data using HiSAT2 and StringTie  ########################
 
@@ -96,11 +98,12 @@ cd $MAPD
 ## move the list of unique ids from the original files to map
 mv $CLEAND/list . 
 
+
 while read i;
 do
   ## HiSat2 is the mapping program
   ##  -p indicates number of processors, --dta reports alignments for StringTie --rf is the read orientation
-    hisat2 -p 6 --dta --phred33       \
+   hisat2 -p 6 --dta --phred33       \
     -x "$REFD"/DpulPA42_index       \
     -1 "$CLEAND"/"$i"_1_paired.fastq  -2 "$CLEAND"/"$i"_2_paired.fastq      \
     -S "$i".sam
@@ -119,20 +122,20 @@ do
   ### Stringtie is the program that counts the reads that are mapped to each gene, exon, transcript model. 
   ### The output from StringTie are counts folders in a directory that is ready to bring into the R program Ballgown to 
   ### Original: This will make transcripts using the reference geneome as a guide for each sorted.bam
-  ### eAB options: This will run stringtie once and  ONLY use the Ref annotation for counting readsto genes and exons 
+  ### eAB options: This will run stringtie once and  ONLY use the Ref annotation for counting reads to genes and exons 
   ###
 mkdir "$COUNTSD"/"$i"
 stringtie -p 6 -e -B -G  "$REFD"/"$REF".gtf -o "$COUNTSD"/"$i"/"$i".gtf -l "$i"   "$MAPD"/"$i"_sorted.bam
 
 done<list
 
-#####################  Copy Results to home Directory.  These will be the files you want to bring back to your computer.
+#####################  Copy Results from your mapping directory to HOME Directory.  These will be the files you want to bring back to your computer.
 ### these are your stats files from Samtools
 cp *.txt $RESULTSD
 
 ### The prepDE.py is a python script that converts the files in your ballgown folder to a count matrix
 cd $COUNTSD
-python ~/class_shared/prepDE.py -i $COUNTSD
+python /home/$MyID/class_shared/prepDE.py -i $COUNTSD
 
 ### copy the final results files (the count matricies that are .cvs to your home directory)
 cp *.csv $RESULTSD
