@@ -1,6 +1,6 @@
 #! /bin/bash
 
-######## FunGen Course Instructions ############
+######## Script 2: Trim SRA sequences as needed and perform FastQC ############
 ## Purpose: The purpose of this script is to trim sequencing adapters and low quality regions from the sequence read data with Trimmomatic,
 ##       and then use FASTQC to evaluate the quality of the data: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
 ## Trimmomatic: http://www.usadellab.org/cms/?page=trimmomatic
@@ -10,12 +10,13 @@
 ## FASTQC output is a folder for each file. The last line of this script will make a tarball of the output directory to bring back to your computer
 ##              Input Data: Raw R1 & R2 reads (FASTQ); Adapter sequences to remove (FASTA)
 ##                              Downloaded read files, R1 and R2 files for each sample if paired-end data (FASTQ)
-##              Output: Trimmed R1 & R2 paired and unpaired reads (FASTQ)       
+##		Output: is a folder for each file that contains a .html file to visualize the quality, and .txt files of quality statistics.
+##			The last line of this script will make a tarball of the output directory to bring back to your computer
 ## For running the script on the Alabama Super Computer.
-        ##For more information: https://hpcdocs.asc.edu/content/slurm-queue-system
+                ##For more information: https://hpcdocs.asc.edu/content/slurm-queue-system
         ## After you have this script in your home directory and you have made it executable using  "chmod +x [script name]", 
         ## then run the script by using "run_script [script name]"
-        ## suggested paramenters are below to submit this script.
+        ## suggested parameters are below to submit this script.
                 ## queue: class  
                 ## core: 6
                 ## time limit (HH:MM:SS): 02:00:00  (may need to increase, if so run on medium queue)
@@ -35,24 +36,24 @@ module load fastqc/0.10.1
 
 ## STOP. You need to replace the [number] with YOUR paths to 
 ##       make variables for your ASC ID so the directories are automatically made in YOUR directory
-MyID=team3_finalproj                        ## Example: MyID=aubtss
+MyID=team3_finalproj        ##For this project, scripts were run on the ASC in a joint directory with other team projects, hence the specificity for team 3. 
 
-# Variables: raw data directory (DD), working directory(WD), cleaned status (CS), name of file containing the adpaters.
-WD=/scratch/$MyID/PracticeRNAseq                          ## Example: WD=/scratch/$MyID/PracticeRNAseq
+# Variables: working directory(WD), raw data directory (DD), cleaned status (CS), cleaned data directory (CD), post-cleaned status directory (CS), name of file containing the adpaters.
+WD=/scratch/$MyID/PracticeRNAseq                          ## Example: WD=/scratch/$MyID/PracticeRNAseq #Contains Raw (NCBI .fastq) and Cleaned (where we perform trimmomatics) Data directories 
 DD=/scratch/$MyID/PracticeRNAseq/RawData                  ## Example: DD=/scratch/$MyID/PracticeRNAseq/RawData
 CD=/scratch/$MyID/PracticeRNAseq/CleanData                ## Example: CD=/scratch/$MyID/PracticeRNAseq/CleanData
 CS=PostCleanQuality
-adapters=AdaptersToTrim_All.fa  ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
+adapters=AdaptersToTrim_All.fa          ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
 					## You will likely need to edit this for other projects based on how your libraries 
-					## were made to search for the correct adapters for your project
+					## were made to search for the correct adapters for your project.
 				
-## make the directories to hold the Cleaned Data files, and the directory to hold the results for assessing quality of the cleaned data.
+## make the directories to hold the Cleaned Data (CD) files, and the directory to hold the results for assessing quality of the cleaned data (CS).
 mkdir $CD
 mkdir $WD/$CS
 
 ################ Trimmomatic ###################################
 ## Move to Raw Data Directory
-cd $DD
+cd $DD          #contains raw .fastq files from NCBI
 
 ### Make list of file names to Trim
         ## this line is a set of piped (|) commands
@@ -62,8 +63,8 @@ cd $DD
         ## sort the list and keep only the unique names and put it into a file named "list"
 ls | grep ".fastq" |cut -d "_" -f 1 | sort | uniq > list
 
-### Copy over the list of Sequencing Adapters that we want Trimmomatic to look for (along with its default adapters)
-## CHECK: You may need to edit this path for the file that is in the class_shared directory from your account.
+### Copy over the list of Sequencing Adapters that we want Trimmomatic to look for (along with its default adapters).
+        ## CHECK: You will need to edit this path for the file that is in the directory of interest containing said adapters file.
 cp /home/$MyID/class_shared/AdaptersToTrim_All.fa . 
 
 ### Run a while loop to process through the names in the list and Trim them with the Trimmomatic Code
