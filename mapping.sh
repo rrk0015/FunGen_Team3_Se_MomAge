@@ -1,7 +1,7 @@
 #!/bin/sh
  
 ######### Instructions  ############
-## Purpose: The purpose of this script is to map the cleaned RNASeq data (.fasta) from step 2 of the core pipeline, outlined in script "step2_trimmomatics_FastQC," to the reference genome. 
+## Purpose: The purpose of this script is to map the cleaned RNASeq data (.fasta) from step 2 of the core pipeline, outlined in script "trim_FastQC," to the reference genome. 
 ## For the core pipeline, the reference genome used was ASM211347v1, curated by Arizona State University (2021). 
 ## For the reference genome effect study, a substitute reference genome was used... PA42v3.0 curated by Indiana State University Bloomington (2016)
 ## Use HiSat2 to index the reference genome and map cleaned (paired) reads to the indexed reference
